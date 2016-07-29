@@ -347,7 +347,6 @@ void do_bgfg(char **argv)
        id = atoi(&argv[1][1]);
        struct job_t * job = getjobjid(jobs, id);
        pid = job -> pid;
-       printf("pid is %d\n", pid);
     }
     else{
       pid = atoi(argv[1]);
@@ -364,27 +363,14 @@ void do_bgfg(char **argv)
     }
 
     pid_t child;
-    struct job_t * job = getjobpid(jobs, pid);
-    if(job == NULL)
-      unix_error("no job with such pid, TSTP error");
-
     sigprocmask(SIG_BLOCK, &mask_one, &prev);
     if((child = Fork()) == 0){
       sigprocmask(SIG_SETMASK, &prev, NULL);
       kill(-pid, SIGCONT);
-
     }
     if(!change2bg){
-      pid_t fg_pid;
-      job -> state = FG;
-      while ((fg_pid = fgpid(jobs))){
-        printf("foreground id is : %d\n", (int)fg_pid);
-        waitfg(fg_pid);
-      }
+      waitfg(child);
       sigprocmask(SIG_SETMASK, &prev, NULL);
-    }
-    else{
-      job -> state = BG;
     }
 
 
@@ -436,9 +422,10 @@ void sigchld_handler(int sig)
     sigset_t mask_all, prev;
     pid_t pid = 0;
     sigfillset(&mask_all);
-    int status = 0;
-    while((pid = waitpid(-1, &status, WUNTRACED | WNOHANG)) > 0){
-      if(WIFSTOPPED(status)){
+    int * status = 0;
+    while((pid = waitpid(-1, status, WUNTRACED | WNOHANG)) > 0){
+      if(WIFSTOPPED(*status)){
+        printf("STOP\n");
         sigprocmask(SIG_BLOCK, &mask_all, &prev);
         printf("change state: %d\n", (int)pid);
         struct job_t * job = getjobpid(jobs, pid);
@@ -448,6 +435,7 @@ void sigchld_handler(int sig)
         sigprocmask(SIG_SETMASK, &prev, NULL);
       }
       else{
+        printf("teminated\n");
         sigprocmask(SIG_BLOCK, &mask_all, &prev);
         printf("delete pid : %d\n", (int)pid);
         deletejob(jobs, pid);
@@ -505,10 +493,10 @@ void sigtstp_handler(int sig)
 
   pid_t pid = fgpid(jobs);
   kill(-pid, sig);
-  struct job_t * job = getjobpid(jobs, pid);
-  if(job == NULL)
-    unix_error("no job with such pid, TSTP error");
-  job -> state = ST;
+  // struct job_t * job = getjobpid(jobs, pid);
+  // if(job == NULL)
+  //   unix_error("no job with such pid, TSTP error");
+  // job -> state = ST;
 
   sigprocmask(SIG_SETMASK, &prev, NULL);
   errno = olderrno;
